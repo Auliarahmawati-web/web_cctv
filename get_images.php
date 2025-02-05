@@ -1,37 +1,35 @@
 <?php
-$channel = isset($_GET['channel']) ? $_GET['channel'] : 'CH1'; // Default to 'CH1' if no channel is passed
+header('Content-Type: application/json');
+
+$channel = isset($_GET['channel']) ? $_GET['channel'] : 'CH1';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $entries = isset($_GET['entries']) ? (int)$_GET['entries'] : 10;
+$baseFolder = 'images/';
+$subDirs = ['2025-01-24', '2025-02-03', '2025-02-04'];
 
-// Define the folder path
-$folder = 'images/';
-$images = [];
-
-// Check if the directory exists
-if (is_dir($folder)) {
-    $files = scandir($folder);
-    
-    // Filter images based on file extension and channel
-    foreach ($files as $file) {
-        if (pathinfo($file, PATHINFO_EXTENSION) === 'jpg' && strpos(strtoupper($file), strtoupper($channel)) !== false) {
-            $images[] = ['file' => $file];
+function scanDirectories($baseFolder, $subDirs, $channel) {
+    $images = [];
+    foreach ($subDirs as $subDir) {
+        $dirPath = $baseFolder . $subDir;
+        if (is_dir($dirPath)) {
+            $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirPath));
+            foreach ($files as $file) {
+                if ($file->isFile() && pathinfo($file, PATHINFO_EXTENSION) === 'jpg') {
+                    if (strpos(strtoupper($file->getFilename()), strtoupper($channel)) !== false) {
+                        $images[] = ['file' => $subDir . '/' . $file->getFilename()];
+                    }
+                }
+            }
         }
     }
-    
-    // Pagination logic
-    $totalImages = count($images);
-    $totalPages = ceil($totalImages / $entries);
-    $offset = ($page - 1) * $entries;
-    $paginatedImages = array_slice($images, $offset, $entries);
-    
-    // Return data as JSON
-    echo json_encode([
-        'images' => $paginatedImages,
-        'totalPages' => $totalPages
-    ]);
-
-    
-} else {
-    echo json_encode(['error' => 'Folder not found']);
+    return $images;
 }
-?> 
+
+$allImages = scanDirectories($baseFolder, $subDirs, $channel);
+$totalImages = count($allImages);
+$paginatedImages = array_slice($allImages, ($page - 1) * $entries, $entries);
+
+echo json_encode([
+    'images' => $paginatedImages,
+    'totalPages' => ceil($totalImages / $entries)
+]);

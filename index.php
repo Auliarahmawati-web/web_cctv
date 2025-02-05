@@ -38,7 +38,8 @@
 </head>
 <body>
   <div class="container mt-4">
-    <h1 class="text-center">Data CCTV Kapal</h1>   
+    <h1 class="text-center">Data CCTV Kapal</h1>  
+    <a href="logout.php" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
 
     <!-- Entries per page selection above the tabs -->
     <div class="d-flex justify-content-between mt-4 entries-per-page">
