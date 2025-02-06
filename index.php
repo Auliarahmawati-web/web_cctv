@@ -1,3 +1,15 @@
+<?php
+// Start the session
+session_start();
+
+// Check if the user is logged in
+if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
+    // Redirect to the login page if not logged in
+    header("Location: login.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +35,6 @@
     .entries-per-page {
       margin-bottom: 15px;
     }
-    /* Styling for the pagination and entry display */
     .pagination-container {
       display: flex;
       justify-content: space-between;
@@ -39,9 +50,9 @@
 <body>
   <div class="container mt-4">
     <h1 class="text-center">Data CCTV Kapal</h1>  
+    <!-- Logout Button -->
     <a href="logout.php" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
 
-    <!-- Entries per page selection above the tabs -->
     <div class="d-flex justify-content-between mt-4 entries-per-page">
       <div>
         <label for="entriesPerPage" class="form-label">Entries per page:</label>
@@ -103,7 +114,7 @@
   <script>
     let currentPage = 1;
     let entriesPerPage = 10;
-    let totalEntries = 57; // Example total entries count
+    let totalEntries = 0; // Dynamic total entries for each channel
 
     // Fetch images based on channel and pagination
     function fetchImages(channel, page = 1, entries = 10) {
@@ -112,6 +123,9 @@
         .then(data => {
           const container = document.getElementById(`${channel}Images`);
           container.innerHTML = ''; // Clear existing content
+
+          // Set the dynamic total entries for the current channel
+          totalEntries = data.totalEntries;
 
           // Add images to container
           data.images.forEach(image => {
@@ -135,44 +149,12 @@
         .catch(error => console.error('Error fetching images:', error));
     }
 
-    // Update pagination
+    // Update pagination with page numbers
     function updatePagination(totalPages, channel) {
       const pagination = document.getElementById('pagination');
       pagination.innerHTML = ''; // Clear existing pagination
 
-      // Add previous page link
-      const prevItem = document.createElement('li');
-      prevItem.classList.add('page-item');
-      const prevLink = document.createElement('a');
-      prevLink.classList.add('page-link');
-      prevLink.href = '#';
-      prevLink.innerHTML = '&laquo;'; // « symbol
-      prevLink.onclick = function () {
-        if (currentPage > 1) {
-          currentPage--;
-          fetchImages(channel, currentPage, entriesPerPage);
-        }
-      };
-      prevItem.appendChild(prevLink);
-      pagination.appendChild(prevItem);
-
-      // Add previous page link
-      const prevItemAlt = document.createElement('li');
-      prevItemAlt.classList.add('page-item');
-      const prevLinkAlt = document.createElement('a');
-      prevLinkAlt.classList.add('page-link');
-      prevLinkAlt.href = '#';
-      prevLinkAlt.innerHTML = '&lsaquo;'; // ‹ symbol
-      prevLinkAlt.onclick = function () {
-        if (currentPage > 1) {
-          currentPage--;
-          fetchImages(channel, currentPage, entriesPerPage);
-        }
-      };
-      prevItemAlt.appendChild(prevLinkAlt);
-      pagination.appendChild(prevItemAlt);
-
-      // Add page numbers
+      // Add page numbers (1, 2, 3, 4...)
       for (let i = 1; i <= totalPages; i++) {
         const pageItem = document.createElement('li');
         pageItem.classList.add('page-item');
@@ -187,38 +169,6 @@
         pageItem.appendChild(pageLink);
         pagination.appendChild(pageItem);
       }
-
-      // Add next page link
-      const nextItemAlt = document.createElement('li');
-      nextItemAlt.classList.add('page-item');
-      const nextLinkAlt = document.createElement('a');
-      nextLinkAlt.classList.add('page-link');
-      nextLinkAlt.href = '#';
-      nextLinkAlt.innerHTML = '&rsaquo;'; // › symbol
-      nextLinkAlt.onclick = function () {
-        if (currentPage < totalPages) {
-          currentPage++;
-          fetchImages(channel, currentPage, entriesPerPage);
-        }
-      };
-      nextItemAlt.appendChild(nextLinkAlt);
-      pagination.appendChild(nextItemAlt);
-
-      // Add next page link
-      const nextItem = document.createElement('li');
-      nextItem.classList.add('page-item');
-      const nextLink = document.createElement('a');
-      nextLink.classList.add('page-link');
-      nextLink.href = '#';
-      nextLink.innerHTML = '&raquo;'; // » symbol
-      nextLink.onclick = function () {
-        if (currentPage < totalPages) {
-          currentPage++;
-          fetchImages(channel, currentPage, entriesPerPage);
-        }
-      };
-      nextItem.appendChild(nextLink);
-      pagination.appendChild(nextItem);
     }
 
     // Fetch images when tab is clicked
