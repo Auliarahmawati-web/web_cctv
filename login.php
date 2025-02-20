@@ -3,7 +3,7 @@ session_start();
 
 // Dummy credentials
 $username = 'admin';
-$password = 'pelni223344';
+$password = '123456';
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
