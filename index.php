@@ -84,9 +84,11 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
+    margin-top: 20px; /* Tambahkan jarak ke atas */
+    margin-bottom: 20px; /* Tambahkan jarak ke bawah */
     flex-wrap: wrap;
 }
+
 
 /* Styling untuk info entri */
 .entries-info {
@@ -175,9 +177,12 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
 </style>
 </head>
 <body>
-  <div class="container mt-4">
-    <h1 class="text-center">Data CCTV Kapal</h1>  
-    <a href="logout.php" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
+<?php include 'navbar.php'; ?>
+<div class="container mx-auto px-5 py-10">
+    <div class="text-center">
+        <h1 class="text-3xl font-bold text-blue-800">Data CCTV Kapal</h1>
+        <hr class="border-blue-400 w-1/4 mx-auto mt-2">
+    </div>
 
     <div class="d-flex justify-content-between mt-4 entries-per-page">
       <div>
@@ -202,35 +207,58 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
 
     <div class="card mb-4">
       <div class="card-header" style="font-size: 20px;">
-      <i class="bi bi-camera-reels-fill" style="font-size: 40px;"></i> Data CCTV
+      <i class="bi bi-camera-reels" style="font-size: 40px;"></i> Data CCTV
       </div>
 
-      <ul class="nav nav-tabs mt-3" id="myTab" role="tablist">
-      <?php
-        $channels = ['CH1', 'CH2', 'CH3', 'CH4', 'CH5', 'CH6', 'CH7', 'CH8'];
-        foreach ($channels as $key => $channel) {
-            $activeClass = $key === 0 ? 'active' : '';
-            echo "<li class='nav-item' role='presentation'>
-                    <a class='nav-link $activeClass' id='{$channel}-tab' data-bs-toggle='tab' href='#{$channel}' role='tab' aria-controls='{$channel}' aria-selected='true'>{$channel}</a>
-                  </li>";
-        }
-      ?>
-    </ul>
+  <ul class="nav nav-tabs mt-3" id="myTab" role="tablist">
+    <?php
+      $baseFolder = 'images/';
+      $channels = [];
 
-    <div class="tab-content mt-3" id="myTabContent">
-      <?php
-        foreach ($channels as $key => $channel) {
-            $activeClass = $key === 0 ? 'show active' : 'fade';
-            echo "<div class='tab-pane $activeClass' id='{$channel}' role='tabpanel' aria-labelledby='{$channel}-tab'>
-                    <div class='card mt-4'>
-                      <div class='card-body'>
-                        <div id='{$channel}Images' class='d-flex flex-wrap gap-3 justify-content-center'></div>
-                      </div>
+      if (is_dir($baseFolder)) {
+          foreach (scandir($baseFolder) as $subDir) {
+              if ($subDir !== '.' && $subDir !== '..' && is_dir($baseFolder . DIRECTORY_SEPARATOR . $subDir)) {
+                  foreach (scandir($baseFolder . DIRECTORY_SEPARATOR . $subDir) as $file) {
+                      if (preg_match('/_CH(\d+)_/i', $file, $matches)) {
+                          $channels[] = 'CH' . (int)$matches[1]; // Ambil angka sebagai integer agar sorting benar
+                      }
+                  }
+              }
+          }
+      }
+
+      $channels = array_values(array_unique($channels));
+
+      // Urutkan berdasarkan angka setelah "CH"
+      usort($channels, function ($a, $b) {
+          return (int)substr($a, 2) - (int)substr($b, 2);
+      });
+
+      foreach ($channels as $key => $channel) {
+          $activeClass = $key === 0 ? 'active' : '';
+          echo "<li class='nav-item' role='presentation'>
+                  <a class='nav-link $activeClass' id='{$channel}-tab' data-bs-toggle='tab' href='#{$channel}' role='tab' aria-controls='{$channel}' aria-selected='true'>{$channel}</a>
+                </li>";
+      }
+    ?>
+  </ul>
+
+  <div class="tab-content mt-3" id="myTabContent">
+    <?php
+      foreach ($channels as $key => $channel) {
+          $activeClass = $key === 0 ? 'show active' : 'fade';
+          echo "<div class='tab-pane $activeClass' id='{$channel}' role='tabpanel' aria-labelledby='{$channel}-tab'>
+                  <div class='card mt-4'>
+                    <div class='card-body'>
+                      <div id='{$channel}Images' class='d-flex flex-wrap gap-3 justify-content-center'></div>
                     </div>
-                  </div>";
-        }
-      ?>
-    </div>
+                  </div>
+                </div>";
+      }
+    ?>
+  </div>
+</div>
+
 
       <div class="pagination-container">
         <span class="entries-info" id="entriesInfo"></span>

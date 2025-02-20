@@ -1,21 +1,38 @@
 <?php
 header('Content-Type: application/json');
 
-// Sanitize inputs
+// Ambil dan validasi parameter input
 $channel = isset($_GET['channel']) ? strtoupper(trim($_GET['channel'])) : 'CH1';
 $dateFilter = isset($_GET['date']) ? trim($_GET['date']) : 'all';
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$entries = isset($_GET['entries']) ? (int)$_GET['entries'] : 10;
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$entries = isset($_GET['entries']) ? max(1, (int)$_GET['entries']) : 10;
 $baseFolder = 'images/';
 
-// Validate channel to avoid invalid values
-$validChannels = ['CH1', 'CH2', 'CH3', 'CH4', 'CH5', 'CH6', 'CH7', 'CH8'];
+// Fungsi untuk mendapatkan daftar channel dari nama file
+function getValidChannels($baseFolder) {
+    $channels = [];
+    if (is_dir($baseFolder)) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($baseFolder)) as $file) {
+            if ($file->isFile() && pathinfo($file, PATHINFO_EXTENSION) === 'jpg') {
+                if (preg_match('/_CH(\d+)_/i', $file->getFilename(), $matches)) {
+                    $channels[] = 'CH' . $matches[1];
+                }
+            }
+        }
+    }
+    return array_values(array_unique($channels));
+}
+
+// Ambil daftar channel valid
+$validChannels = getValidChannels($baseFolder);
+
+// Validasi channel
 if (!in_array($channel, $validChannels)) {
     echo json_encode(['error' => 'Invalid channel']);
     exit;
 }
 
-// Function to get all sub-folders in the images directory
+// Fungsi untuk mendapatkan daftar folder (tanggal)
 function getSubDirectories($baseFolder) {
     $subDirs = [];
     if (is_dir($baseFolder)) {
@@ -28,26 +45,24 @@ function getSubDirectories($baseFolder) {
     return $subDirs;
 }
 
-// Function to scan images in the sub-folders
+// Fungsi untuk mencari gambar berdasarkan channel & filter tanggal
 function scanDirectories($baseFolder, $subDirs, $channel, $dateFilter) {
     $images = [];
     foreach ($subDirs as $subDir) {
-        // Filter berdasarkan tanggal (jika bukan 'all')
         if ($dateFilter !== 'all' && $subDir !== $dateFilter) {
             continue;
         }
 
         $dirPath = $baseFolder . DIRECTORY_SEPARATOR . $subDir;
-        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirPath));
-
-        foreach ($files as $file) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirPath)) as $file) {
             if ($file->isFile() && pathinfo($file, PATHINFO_EXTENSION) === 'jpg') {
-                if (strpos(strtoupper($file->getFilename()), $channel) !== false) {
-                    // Return file with relative path and name
-                    $images[] = [
-                        'file' => $subDir . DIRECTORY_SEPARATOR . $file->getFilename(),
-                        'title' => pathinfo($file->getFilename(), PATHINFO_FILENAME)  // Adding title from the file name
-                    ];
+                if (preg_match('/_CH(\d+)_/i', $file->getFilename(), $matches)) {
+                    if ('CH' . $matches[1] === $channel) {
+                        $images[] = [
+                            'file' => $subDir . DIRECTORY_SEPARATOR . $file->getFilename(),
+                            'title' => pathinfo($file->getFilename(), PATHINFO_FILENAME)
+                        ];
+                    }
                 }
             }
         }
@@ -55,22 +70,23 @@ function scanDirectories($baseFolder, $subDirs, $channel, $dateFilter) {
     return $images;
 }
 
-// Get sub-folders dynamically
+// Ambil daftar folder (tanggal)
 $subDirs = getSubDirectories($baseFolder);
 
-// Scan for images matching the channel and date
+// Ambil daftar gambar sesuai filter
 $allImages = scanDirectories($baseFolder, $subDirs, $channel, $dateFilter);
 $totalImages = count($allImages);
 
-// Handle pagination
+// Pagination
 $paginatedImages = array_slice($allImages, ($page - 1) * $entries, $entries);
 
-// Output JSON with additional metadata for pagination
+// Output JSON dengan metadata pagination
 echo json_encode([
     'images' => $paginatedImages,
+    'validChannels' => $validChannels,
     'totalPages' => ceil($totalImages / $entries),
-    'totalEntries' => $totalImages, // Include total number of entries
-    'currentPage' => $page, // Current page
-    'entriesPerPage' => $entries // Entries per page
+    'totalEntries' => $totalImages,
+    'currentPage' => $page,
+    'entriesPerPage' => $entries
 ]);
 ?>
