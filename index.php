@@ -28,21 +28,19 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     border-radius: 5px; /* Membuat sudut tombol pagination lebih lembut */
     transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
     padding: 8px 12px; /* Menambah ruang dalam tombol */
-    border: 1px solid #ddd;
+    border: none; /* Remove border */
 }
 
 .pagination .page-item .page-link:hover {
     background-color: #007bff; /* Warna biru khas Bootstrap */
     color: #fff;
-    border-color: #007bff;
 }
 
 /* Styling untuk tab-content */
 .tab-content {
     padding: 15px;
-    border-top: 2px solid #ddd;
-    border-radius: 5px;
     background-color: #f9f9f9;
+    border-radius: 5px;
 }
 
 /* Styling gambar dalam tab-content */
@@ -52,7 +50,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     cursor: pointer; /* Pointer cursor pada gambar */
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     border-radius: 5px;
-    border: 1px solid #ddd;
+    /* No border here */
 }
 
 .tab-content img:hover {
@@ -72,23 +70,22 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
 
 .entries-per-page select,
 .filter-by-date select {
-    padding: 8px 12px; /* Menambah ruang dalam */
-    min-width: 150px; /* Menyesuaikan lebar minimum */
-    width: 200px; /* Memperlebar dropdown */
+    padding: 8px 12px;
+    min-width: 150px;
+    width: 200px;
     border-radius: 5px;
     border: 1px solid #ccc;
 }
 
-/* Styling untuk pagination container */
 .pagination-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* Pusatkan pagination */
     align-items: center;
-    margin-top: 20px; /* Tambahkan jarak ke atas */
-    margin-bottom: 20px; /* Tambahkan jarak ke bawah */
+    margin-top: 10px; /* Kurangi nilai ini untuk menaikkan posisi */
+    margin-bottom: 20px;
     flex-wrap: wrap;
+    width: 100%; /* Pastikan mengambil lebar penuh */
 }
-
 
 /* Styling untuk info entri */
 .entries-info {
@@ -101,7 +98,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
 /* Modal Styling */
 .modal-body {
     display: flex;
-    flex-direction: column;  /* Mengatur agar image container dan kontrol zoom tersusun vertikal */
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 20px;
@@ -112,12 +109,11 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
 .image-container {
     overflow: auto;
     max-width: 100%;
-    max-height: 80vh; /* Menentukan tinggi maksimum sesuai kebutuhan */
+    max-height: 80vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid #ddd; /* Opsional: border untuk container gambar */
-    border-radius: 8px;
+    border-radius: 8px; /* No border */
 }
 
 /* Styling gambar dalam modal yang berada di dalam container */
@@ -128,6 +124,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     max-height: 80vh;
     object-fit: contain;
     transition: transform 0.3s ease-in-out;
+    /* No border */
 }
 
 /* Efek zoom gambar di modal (bisa diatur oleh JavaScript) */
@@ -149,7 +146,6 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     height: 50px; /* Tinggi tombol */
     font-size: 1.5rem; /* Ukuran teks */
 }
- 
 
 /* Responsive Fix */
 @media (max-width: 768px) {
@@ -205,10 +201,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
       </div>
     </div>
 
-    <div class="card mb-4">
-      <div class="card-header" style="font-size: 20px;">
-      <i class="bi bi-camera-reels" style="font-size: 40px;"></i> Data CCTV
-      </div>
+  
 
   <ul class="nav nav-tabs mt-3" id="myTab" role="tablist">
     <?php
